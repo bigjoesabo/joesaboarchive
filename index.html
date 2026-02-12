@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE JOESABO ARCHIVE // RESTRICTED ACCESS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+        :root {
+            --neon-green: #39ff14;
+            --dark-bg: #0a0a0a;
+            --panel-bg: #111111;
+            --border-col: #333;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #eee;
+            font-family: 'Space Mono', monospace;
+            overflow-x: hidden;
+        }
+
+        .retro-font {
+            font-family: 'VT323', monospace;
+        }
+
+        /* CRT Scanline Effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .crt-flicker {
+            animation: flicker 0.15s infinite;
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(18, 16, 16, 0.05);
+            z-index: 49;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.9; }
+            50% { opacity: 1.0; }
+            100% { opacity: 0.9; }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon-green);
+            border: 2px solid #000;
+        }
+
+        .glitch {
+            position: relative;
+        }
+        .glitch:hover {
+            text-shadow: 2px 0 red, -2px 0 blue;
+        }
+
+        .archive-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .archive-item:hover {
+            background-color: var(--neon-green);
+            color: black;
+            transform: translateX(10px);
+        }
+
+        .active-item {
+            background-color: var(--neon-green);
+            color: black;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+
+        /* Loader */
+        .loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- CRT Effects -->
+    <div class="scanlines"></div>
+    <div class="crt-flicker"></div>
+
+    <!-- Loading Screen -->
+    <div id="loader" class="loader-wrapper">
+        <h1 class="text-6xl retro-font text-[#39ff14] mb-4">LOADING JOESABO ARCHIVE...</h1>
+        <div class="w-64 h-4 border-2 border-[#39ff14] p-1">
+            <div id="loading-bar" class="h-full bg-[#39ff14] w-0 transition-all duration-1000"></div>
+        </div>
+        <p class="mt-4 text-xs text-green-700">Decryption Key: "CHEESE"</p>
+    </div>
+
+    <!-- Sidebar / Nav -->
+    <aside class="w-full md:w-80 border-r border-[#333] bg-[#050505] flex flex-col z-10 h-1/3 md:h-full">
+        <div class="p-6 border-b border-[#333] select-none">
+            <h1 class="text-4xl retro-font text-[#39ff14] glitch mb-1" onclick="loadPage(0)">JOESABO_ARCHIVE</h1>
+            <p class="text-xs text-gray-500">ver 9.2.1 // UNSTABLE</p>
+        </div>
+        
+        <div class="p-4 border-b border-[#333]">
+            <input type="text" id="searchInput" placeholder="Search Archives..." class="w-full bg-[#111] border border-[#333] p-2 text-sm text-[#39ff14] focus:outline-none focus:border-[#39ff14] placeholder-gray-700">
+        </div>
+
+        <div class="overflow-y-auto flex-1 p-2" id="nav-list">
+            <!-- Nav Items Injected Here -->
+        </div>
+
+        <div class="p-4 border-t border-[#333] text-center">
+            <button onclick="randomPage()" class="w-full bg-[#333] hover:bg-[#39ff14] hover:text-black text-[#39ff14] py-2 retro-font text-xl transition-colors border border-[#39ff14]">
+                <i class="fas fa-random mr-2"></i> I'M FEELING RANDOM
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 bg-[#0a0a0a] relative overflow-hidden flex flex-col h-2/3 md:h-full z-10">
+        <!-- Header Bar -->
+        <div class="h-12 border-b border-[#333] flex items-center px-6 justify-between bg-[#050505]">
+            <div class="flex items-center space-x-2">
+                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+            </div>
+            <div id="file-path" class="text-xs text-gray-500 font-mono">/root/joesabo/secrets/</div>
+        </div>
+
+        <!-- Content Area -->
+        <div id="content-display" class="flex-1 overflow-y-auto p-8 md:p-12 pb-24">
+            <!-- Dynamic Content Injected Here -->
+        </div>
+    </main>
+
+    <script>
+        // --- DATA STORE (The 30 Pages) ---
+        const archiveData = [
+            {
+                id: 0,
+                title: "WELCOME_USER",
+                icon: "fa-home",
+                content: `
+                    <h1 class="text-6xl retro-font text-[#39ff14] mb-8">WELCOME TO THE ARCHIVE</h1>
+                    <p class="mb-4 text-xl">You have stumbled upon the Joesabo Archive. This is a repository of forbidden knowledge, useless facts, and things Joe found in his pocket.</p>
+                    <div class="border border-[#333] p-6 bg-[#111] mb-8">
+                        <p class="text-red-500 font-bold mb-2">WARNING:</p>
+                        <p>Browsing this archive may result in:</p>
+                        <ul class="list-disc ml-6 mt-2 space-y-1 text-gray-400">
+                            <li>Unexplained cravings for toast</li>
+                            <li>Confusion regarding the number 4</li>
+                            <li>Sudden knowledge of pigeon politics</li>
+                            <li>Loss of faith in printer technology</li>
+                        </ul>
+                    </div>
+                    <p>Select a file from the left to begin decryption.</p>
+                `
+            },
+            {
+                id: 1,
+                title: "001: The Truth About Pigeons",
+                icon: "fa-crow",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">Subject: PIGEONS</h2>
+                    <p class="mb-4">We have gathered evidence suggesting pigeons are not birds, but advanced surveillance drones recharged by sitting on power lines.</p>
+                    <img src="https://placehold.co/600x300/111/39ff14?text=EVIDENCE+REDACTED" class="mb-4 border border-[#39ff14] opacity-50">
+                    <p><strong>Proof:</strong></p>
+                    <ul class="list-disc ml-8 mb-4">
+                        <li>Have you ever seen a baby pigeon? Exactly.</li>
+                        <li>They bob their heads to calibrate their GPS.</li>
+                        <li>They eat bread to fuel their bio-reactors.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 2,
+                title: "002: Ranking Varieties of Moss",
+                icon: "fa-tree",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">THE OFFICIAL MOSS TIER LIST</h2>
+                    <div class="grid gap-4">
+                        <div class="p-4 border border-[#333] bg-[#111]">
+                            <h3 class="text-2xl text-yellow-400">S-TIER: Cushion Moss</h3>
+                            <p>Soft, fluffy, great for sleeping on if you are an elf.</p>
+                        </div>
+                        <div class="p-4 border border-[#333] bg-[#111]">
+                            <h3 class="text-2xl text-gray-400">B-TIER: Fern Moss</h3>
+                            <p>Tries too hard to be a plant. Stay in your lane.</p>
+                        </div>
+                        <div class="p-4 border border-[#333] bg-[#111]">
+                            <h3 class="text-2xl text-red-500">F-TIER: Sphagnum</h3>
+                            <p>Sounds like a disease. Too soggy. 0/10.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 3,
+                title: "003: How to Eat a Door",
+                icon: "fa-door-open",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">The Wooden Diet</h2>
+                    <p class="mb-6 italic text-gray-500">Note: This is legally a joke. Do not eat doors.</p>
+                    <p class="mb-4">The key is preparation. You cannot consume a standard oak door in one sitting. It requires patience.</p>
+                    <ol class="list-decimal ml-8 space-y-4 text-lg">
+                        <li><strong>Seasoning:</strong> Sawdust is dry. Add hot sauce.</li>
+                        <li><strong>Grinding:</strong> Turn the door into a fine powder.</li>
+                        <li><strong>Smoothie:</strong> Mix with strawberries to mask the taste of mahogany.</li>
+                        <li><strong>Time:</strong> At a rate of 1 gram per day, you can finish a door in 34 years.</li>
+                    </ol>
+                `
+            },
+            {
+                id: 4,
+                title: "004: Joesabo's Top 5 Spoons",
+                icon: "fa-utensil-spoon",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">ELITE UTENSILS</h2>
+                    <p>Not all spoons are created equal. We judged them on scoop-ability and mouth-feel.</p>
+                    <table class="w-full mt-6 text-left border-collapse">
+                        <thead>
+                            <tr class="text-[#39ff14] border-b border-[#333]">
+                                <th class="p-2">Rank</th>
+                                <th class="p-2">Type</th>
+                                <th class="p-2">Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-[#333]"><td class="p-2">#1</td><td class="p-2">Soup Spoon (Round)</td><td class="p-2">10/10 (Aerodynamic)</td></tr>
+                            <tr class="border-b border-[#333]"><td class="p-2">#2</td><td class="p-2">Teaspoon</td><td class="p-2">8/10 (Classic)</td></tr>
+                            <tr class="border-b border-[#333]"><td class="p-2">#3</td><td class="p-2">McFlurry Spoon</td><td class="p-2">6/10 (Deceptive, it's a straw?)</td></tr>
+                            <tr class="border-b border-[#333]"><td class="p-2">#4</td><td class="p-2">Spork</td><td class="p-2">2/10 (Identity crisis)</td></tr>
+                            <tr class="border-b border-[#333]"><td class="p-2">#5</td><td class="p-2">Ladle</td><td class="p-2">1/10 (Too big for mouth)</td></tr>
+                        </tbody>
+                    </table>
+                `
+            },
+            {
+                id: 5,
+                title: "005: Why 7 fears 8",
+                icon: "fa-sort-numeric-up",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">CASE FILE: 7 vs 9</h2>
+                    <p class="mb-4">Common misconception: 7 ate 9. False.</p>
+                    <p class="mb-4"><strong>The Truth:</strong> 7 is a registered 6 offender.</p>
+                    <p class="mt-8 text-xs text-gray-600">I apologize for this entry.</p>
+                `
+            },
+            {
+                id: 6,
+                title: "006: The Secret Life of Lint",
+                icon: "fa-cloud",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">POCKET MATTER</h2>
+                    <p>Lint is actually a hive-mind organism that breeds in denim. Every time you wash your jeans, you are angering the colony.</p>
+                    <div class="mt-6 p-4 border border-dashed border-[#39ff14]">
+                        <h3 class="text-xl">Lint Composition Analysis:</h3>
+                        <ul class="list-disc ml-6">
+                            <li>10% Cotton</li>
+                            <li>40% Dead Skin</li>
+                            <li>30% Dreams that didn't come true</li>
+                            <li>20% The receipt from a Wendy's in 2014</li>
+                        </ul>
+                    </div>
+                `
+            },
+            {
+                id: 7,
+                title: "007: Advanced Napkin Folding",
+                icon: "fa-scroll",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">DANGER LEVEL: HIGH</h2>
+                    <p>Do not attempt "The Swan" without protective eyewear.</p>
+                    <p class="mt-4"><strong>The "Crumple" Technique:</strong></p>
+                    <ol class="list-decimal ml-8 mt-2">
+                        <li>Take napkin.</li>
+                        <li>Squeeze hand into fist.</li>
+                        <li>Throw at table.</li>
+                        <li>Bon appetit.</li>
+                    </ol>
+                `
+            },
+            {
+                id: 8,
+                title: "008: Invisible Sandwiches",
+                icon: "fa-hamburger",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">ZERO CALORIES</h2>
+                    <p>The Joesabo Archive is proud to present the recipe for the Invisible Sandwich.</p>
+                    <div class="flex justify-center my-12">
+                        <!-- It is invisible -->
+                        <div class="w-64 h-32 border-2 border-dashed border-gray-700 flex items-center justify-center text-gray-600">
+                            (Image of Sandwich)
+                        </div>
+                    </div>
+                    <p>Tastes like air, with a hint of disappointment.</p>
+                `
+            },
+            {
+                id: 9,
+                title: "009: Cult of the Plastic Chair",
+                icon: "fa-chair",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">THE MONOBLOC</h2>
+                    <p>You know the chair. The white plastic one. It is everywhere.</p>
+                    <p class="mt-4">It exists in Antarctica. It exists in the Sahara. It exists on your porch.</p>
+                    <p class="mt-4 text-xl text-[#39ff14]">WE DO NOT KNOW WHO MAKES THEM. THEY JUST SPAWN.</p>
+                `
+            },
+            {
+                id: 10,
+                title: "010: Rating Water Flavors",
+                icon: "fa-tint",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">H2O REVIEWS</h2>
+                    <ul class="space-y-4">
+                        <li class="border-l-4 border-blue-500 pl-4"><strong>3AM Night Water:</strong> 11/10. Nectar of the gods.</li>
+                        <li class="border-l-4 border-yellow-500 pl-4"><strong>Warm Hose Water:</strong> 4/10. Nostalgic but tastes like rubber.</li>
+                        <li class="border-l-4 border-green-500 pl-4"><strong>Dasani:</strong> -5/10. Tastes like pennies and sadness.</li>
+                        <li class="border-l-4 border-purple-500 pl-4"><strong>Fridge Water (Old Filter):</strong> 2/10. Spicy.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 11,
+                title: "011: Forbidden Snacks",
+                icon: "fa-exclamation-triangle",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">DO NOT EAT</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-[#222] p-4">
+                            <h3 class="text-xl text-orange-400">Tide Pods</h3>
+                            <p>Looks like candy. Is actually chemical burns.</p>
+                        </div>
+                        <div class="bg-[#222] p-4">
+                            <h3 class="text-xl text-pink-400">Insulation</h3>
+                            <p>Forbidden Cotton Candy. Very itchy inside lungs.</p>
+                        </div>
+                        <div class="bg-[#222] p-4">
+                            <h3 class="text-xl text-purple-400">Lava Lamp Goo</h3>
+                            <p>Forbidden Orange Juice. Will give you superpowers (or death).</p>
+                        </div>
+                        <div class="bg-[#222] p-4">
+                            <h3 class="text-xl text-blue-400">Silica Gel</h3>
+                            <p>"Do Not Eat" is just a suggestion from the government.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 12,
+                title: "012: Giraffes Aren't Real",
+                icon: "fa-binoculars",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">LOOK AT THE NECK</h2>
+                    <p>It's too long. Physics doesn't allow it. It's clearly a periscope inside a horse costume.</p>
+                    <p class="mt-4">Have you ever seen a giraffe build a house? No. Because they are robots programmed only to eat leaves and look down on us.</p>
+                `
+            },
+            {
+                id: 13,
+                title: "013: History of the 'E' Key",
+                icon: "fa-keyboard",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">PRESS E</h2>
+                    <p>The 'E' key was invented in 1842 by Earl E. Everson.</p>
+                    <p>Before that, people wrot sentncs lik this. It was vry hard to undrstand.</p>
+                    <button class="mt-8 px-8 py-4 bg-[#333] hover:bg-white hover:text-black border border-white">E</button>
+                `
+            },
+            {
+                id: 14,
+                title: "014: Train Your Pet Rock",
+                icon: "fa-cube",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">ROCK HUSBANDRY</h2>
+                    <p>Rocks are low maintenance pets, but they have behavioral issues.</p>
+                    <ul class="list-disc ml-6 mt-4 space-y-2">
+                        <li><strong>Sit:</strong> They are very good at this.</li>
+                        <li><strong>Stay:</strong> Masters of this command.</li>
+                        <li><strong>Fetch:</strong> Terrible. 0/10. Do not throw your rock, it will not come back.</li>
+                        <li><strong>Roll Over:</strong> Only works on hills.</li>
+                    </ul>
+                `
+            },
+            {
+                id: 15,
+                title: "015: Hiding Cheese Sticks",
+                icon: "fa-cheese",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">TACTICAL DAIRY</h2>
+                    <p>Top 5 places to hide a cheese stick in an emergency:</p>
+                    <ol class="list-decimal ml-8 mt-4 text-lg">
+                        <li>Inside a hollowed-out cucumber (Vegan camouflage).</li>
+                        <li>Taped to the ceiling fan.</li>
+                        <li>Inside your sock (Warm cheese > Cold cheese).</li>
+                        <li>Behind your ear like a pencil.</li>
+                        <li>In the DVD case of "Shrek 2". No one opens that anymore.</li>
+                    </ol>
+                `
+            },
+            {
+                id: 16,
+                title: "016: The Sound of Silence",
+                icon: "fa-volume-mute",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">AUDIO LOG 992</h2>
+                    <p>Please enjoy this 10-hour clip of absolutely nothing.</p>
+                    <div class="mt-6 bg-[#222] p-4 rounded border border-[#333] flex items-center space-x-4">
+                        <button class="w-12 h-12 rounded-full bg-[#39ff14] text-black flex items-center justify-center">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <div class="flex-1">
+                            <div class="h-2 bg-[#444] rounded-full overflow-hidden">
+                                <div class="h-full w-0 bg-[#39ff14]"></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-400 mt-1">
+                                <span>0:00</span>
+                                <span>10:00:00</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 17,
+                title: "017: DIY Time Machine",
+                icon: "fa-hourglass-half",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">PROJECT CHRONOS</h2>
+                    <p><strong>Ingredients:</strong></p>
+                    <ul class="list-disc ml-6 mb-4">
+                        <li>1 Large Cardboard Box</li>
+                        <li>Sharpie Marker</li>
+                        <li>Imagination</li>
+                    </ul>
+                    <p><strong>Instructions:</strong></p>
+                    <p>Write "TIME MACHINE" on the box. Sit inside. Wait. You are now traveling into the future at a rate of 1 second per second.</p>
+                `
+            },
+            {
+                id: 18,
+                title: "018: Is Cereal Soup?",
+                icon: "fa-utensils",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">THE GREAT DEBATE</h2>
+                    <p class="text-xl mb-4">Definition of Soup: "A liquid dish, typically made by boiling meat, fish, or vegetables, etc., in stock or water."</p>
+                    <p class="mb-4 text-red-400">COUNTERPOINT: Milk is a broth. Cereal is the crouton. It is a cold, sweet gazpacho.</p>
+                    <p class="text-3xl text-center mt-8 p-4 border border-white">VERDICT: YES.</p>
+                `
+            },
+            {
+                id: 19,
+                title: "019: Joesabo Manifesto",
+                icon: "fa-file-alt",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">LOREM IPSUM DOLOR</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. But actually, we believe that socks should be sold in packs of 3, because you always lose one. Why is this not industry standard?</p>
+                    <p class="mt-4">Also, abolish clam-shell packaging. I need scissors to open the scissors I just bought.</p>
+                `
+            },
+            {
+                id: 20,
+                title: "020: Spiderman Pics",
+                icon: "fa-spider",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">J. JONAH JAMESON'S STASH</h2>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="aspect-square bg-white flex items-center justify-center border-4 border-black">
+                            <i class="fas fa-spider text-6xl text-black"></i>
+                        </div>
+                         <div class="aspect-square bg-white flex items-center justify-center border-4 border-black">
+                            <i class="fas fa-spider text-6xl text-red-600"></i>
+                        </div>
+                         <div class="aspect-square bg-white flex items-center justify-center border-4 border-black">
+                            <i class="fas fa-spider text-6xl text-blue-600"></i>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-center">I am not a very good photographer.</p>
+                `
+            },
+            {
+                id: 21,
+                title: "021: Socks with Sandals",
+                icon: "fa-shoe-prints",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">A DEFENSE</h2>
+                    <p>Society mocks us. But we are comfortable.</p>
+                    <p class="mt-4">It is the gladiator look combined with the comfort of modern cotton. It is functional. It prevents blisters. It keeps toes warm. It is the peak of human fashion evolution and you are all just jealous.</p>
+                `
+            },
+            {
+                id: 22,
+                title: "022: Extreme Ironing",
+                icon: "fa-tshirt",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">SPORT OF KINGS</h2>
+                    <p>Extreme Ironing is a real sport where people take ironing boards to remote locations and iron shirts.</p>
+                    <p class="mt-4"><strong>Locations include:</strong></p>
+                    <ul class="list-disc ml-6">
+                        <li>While skydiving</li>
+                        <li>On top of a mountain</li>
+                        <li>Underwater</li>
+                        <li>While being chased by bees</li>
+                    </ul>
+                    <p class="mt-4">A creased shirt is a sign of weakness.</p>
+                `
+            },
+            {
+                id: 23,
+                title: "023: The Color Blurple",
+                icon: "fa-palette",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">HEX CODE: #5865F2</h2>
+                    <div class="w-full h-32 bg-[#5865F2] mb-4"></div>
+                    <p>It's not blue. It's not purple. It's Blurple.</p>
+                    <p>It exists in a quantum state between the two. If you look at it with your left eye, it's blue. Right eye? Purple. Both eyes? Headache.</p>
+                `
+            },
+            {
+                id: 24,
+                title: "024: How to Speak Whale",
+                icon: "fa-fish",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">LESSON 1</h2>
+                    <p>Repeat after me:</p>
+                    <h1 class="text-6xl mt-8 font-bold text-blue-300">HWAAAAAAAOOOOOOOoooooooHHHHHHH</h1>
+                    <p class="mt-4">Translation: "Where is the krill?"</p>
+                    <h1 class="text-6xl mt-8 font-bold text-blue-300">MMMMMUUUUUUUUUUUUUUH</h1>
+                    <p class="mt-4">Translation: "I am a bus." (Whales are confusing).</p>
+                `
+            },
+            {
+                id: 25,
+                title: "025: Summoning Pizza",
+                icon: "fa-pizza-slice",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">THE RITUAL</h2>
+                    <ol class="list-decimal ml-8 space-y-4">
+                        <li>Draw a circle of pepperoni on the floor.</li>
+                        <li>Light 3 garlic knots as candles.</li>
+                        <li>Chant the ancient words: <em>"Dominos... Papa Johns... Little Caesars..."</em></li>
+                        <li>Pick up your phone and order a pizza like a normal person.</li>
+                    </ol>
+                `
+            },
+            {
+                id: 26,
+                title: "026: Best Pasta Shape",
+                icon: "fa-bone",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">IT'S DINOSAURS</h2>
+                    <p>Do not argue with me. Penne is boring. Spaghetti is messy.</p>
+                    <p class="mt-4">Dino Nuggets + Dino Pasta = The Cretaceous Combo.</p>
+                    <p><strong>Scientific reason:</strong> The T-Rex shape holds more cheese sauce in its tiny arms.</p>
+                `
+            },
+            {
+                id: 27,
+                title: "027: Why Printers Smell Fear",
+                icon: "fa-print",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">ERROR: PC LOAD LETTER</h2>
+                    <p>Printers are sentient. They know when you are in a rush.</p>
+                    <p class="mt-4"><strong>Printer Logic:</strong></p>
+                    <div class="bg-black border border-green-500 p-4 font-mono text-green-500 mt-2">
+                        > User is relaxed? -> Print perfectly.<br>
+                        > User is late for meeting? -> JAM PAPER.<br>
+                        > User needs black and white doc? -> CYAN LEVEL LOW. CANNOT PRINT.
+                    </div>
+                `
+            },
+            {
+                id: 28,
+                title: "028: Legend of Left Sock",
+                icon: "fa-socks",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">THEY ESCAPE</h2>
+                    <p>Where do they go? The dryer does not eat them. The dryer is a portal.</p>
+                    <p>Somewhere, in a parallel dimension, there is a mountain of left socks. They have formed a society. They have a king (it's an Argyle one).</p>
+                `
+            },
+            {
+                id: 29,
+                title: "029: Facts About Dirt",
+                icon: "fa-mountain",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">DIRT: A REVIEW</h2>
+                    <p>1. It is brown (usually).</p>
+                    <p>2. Worms love it.</p>
+                    <p>3. It is older than your grandma.</p>
+                    <p>4. If you get it wet, it becomes mud. This is alchemy.</p>
+                    <p>5. Don't eat it (See entry #011).</p>
+                `
+            },
+            {
+                id: 30,
+                title: "030: The End of Internet",
+                icon: "fa-skull",
+                content: `
+                    <h2 class="text-4xl text-[#39ff14] mb-6">YOU REACHED THE END</h2>
+                    <p>This is the last page of the internet. There is nothing left to scroll.</p>
+                    <p class="mt-8 text-center text-6xl">GO OUTSIDE.</p>
+                    <div class="mt-12 text-center">
+                        <button onclick="window.location.reload()" class="bg-red-600 text-white p-4 rounded hover:bg-red-700">RESET SIMULATION</button>
+                    </div>
+                `
+            }
+        ];
+
+        // --- APP LOGIC ---
+
+        const navList = document.getElementById('nav-list');
+        const contentDisplay = document.getElementById('content-display');
+        const searchInput = document.getElementById('searchInput');
+        const filePath = document.getElementById('file-path');
+        const loader = document.getElementById('loader');
+        const loadingBar = document.getElementById('loading-bar');
+
+        // Initialize
+        function init() {
+            // Render Nav
+            renderNav(archiveData);
+
+            // Fake Loading Sequence
+            setTimeout(() => { loadingBar.style.width = "30%"; }, 200);
+            setTimeout(() => { loadingBar.style.width = "70%"; }, 600);
+            setTimeout(() => { loadingBar.style.width = "100%"; }, 1200);
+            setTimeout(() => { 
+                loader.style.opacity = "0";
+                setTimeout(() => { loader.style.display = "none"; }, 500);
+            }, 1500);
+
+            // Load Home
+            loadPage(0);
+        }
+
+        // Render Sidebar Items
+        function renderNav(items) {
+            navList.innerHTML = '';
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'archive-item p-3 mb-1 border-l-2 border-[#333] text-gray-400 text-sm font-mono flex items-center group';
+                div.id = `nav-${item.id}`;
+                div.onclick = () => loadPage(item.id);
+                div.innerHTML = `
+                    <i class="fas ${item.icon} w-6 text-center mr-3 group-hover:text-black"></i>
+                    <span class="truncate">${item.title}</span>
+                `;
+                navList.appendChild(div);
+            });
+        }
+
+        // Load Content
+        function loadPage(id) {
+            const page = archiveData.find(p => p.id === id);
+            if (!page) return;
+
+            // Update UI
+            document.querySelectorAll('.archive-item').forEach(el => el.classList.remove('active-item', 'border-[#39ff14]'));
+            const activeNav = document.getElementById(`nav-${id}`);
+            if(activeNav) {
+                activeNav.classList.add('active-item', 'border-[#39ff14]');
+                activeNav.scrollIntoView({behavior: "smooth", block: "center"});
+            }
+
+            // Update Content with slight glitch effect
+            contentDisplay.style.opacity = '0';
+            contentDisplay.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                contentDisplay.innerHTML = page.content;
+                contentDisplay.style.opacity = '1';
+                contentDisplay.style.transform = 'translateY(0)';
+                filePath.innerText = `/root/joesabo/secrets/${page.title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}.log`;
+            }, 150);
+        }
+
+        // Random Button
+        function randomPage() {
+            const randomIndex = Math.floor(Math.random() * (archiveData.length - 1)) + 1; // Skip home (0)
+            loadPage(randomIndex);
+        }
+
+        // Search Function
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = archiveData.filter(item => item.title.toLowerCase().includes(term) || item.content.toLowerCase().includes(term));
+            
+            // Re-render nav but keep IDs intact
+            navList.innerHTML = '';
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'archive-item p-3 mb-1 border-l-2 border-[#333] text-gray-400 text-sm font-mono flex items-center group';
+                div.id = `nav-${item.id}`;
+                div.onclick = () => loadPage(item.id);
+                div.innerHTML = `
+                    <i class="fas ${item.icon} w-6 text-center mr-3 group-hover:text-black"></i>
+                    <span class="truncate">${item.title}</span>
+                `;
+                navList.appendChild(div);
+            });
+
+            if (filtered.length === 0) {
+                navList.innerHTML = `<div class="p-4 text-red-500 text-xs">NO FILES FOUND. TRY "CHEESE".</div>`;
+            }
+        });
+
+        // Run
+        window.onload = init;
+
+    </script>
+</body>
+</html>
