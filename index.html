@@ -3,6 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading...</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0f0f0f;
+            color: #555;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            cursor: pointer; /* Makes the whole page look clickable */
+        }
+        
+        .launcher-btn {
+            background: #222;
+            color: #ccc;
+            border: 1px solid #444;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .launcher-btn:hover { 
+            background: #333; 
+            color: #fff; 
+            border-color: #666; 
+        }
+    </style>
+</head>
+<body onclick="launchCloak()">
+
+    <button class="launcher-btn">Click anywhere to enter</button>
+
+    <script>
+        function launchCloak() {
+            // 1. Open a new about:blank tab
+            let win = window.open('about:blank', '_blank');
+
+            // Check if the popup blocker stopped it
+            if (!win || win.closed || typeof win.closed == 'undefined') {
+                alert("Please allow popups for this site to work!");
+                return;
+            }
+
+            // 2. This is your exact original code, stored as a string
+            // (Note: The backticks in your original code have been escaped so they don't break this string)
+            const proxyCode = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Not Found</title>
     
     <style>
@@ -33,7 +88,6 @@
             letter-spacing: 2px;
         }
 
-        /* Make the numbers look like normal text but clickable */
         .digit {
             cursor: default;
             user-select: none;
@@ -45,7 +99,6 @@
             margin: 0;
         }
 
-        /* --- Modal Styles --- */
         #modal-overlay {
             display: none;
             position: fixed;
@@ -91,11 +144,10 @@
 
         .modal-btn:hover { background: #333; color: #fff; border-color: #666; }
 
-        /* --- Minimal Notification Styles --- */
         #notification {
             position: fixed;
             bottom: 20px;
-            right: -400px; /* Hidden off-screen initially */
+            right: -400px; 
             background: #111;
             border: 1px solid #333;
             color: #aaa;
@@ -108,13 +160,9 @@
             line-height: 1.5;
         }
 
-        #notification.show {
-            right: 20px; /* Slide in */
-        }
-
+        #notification.show { right: 20px; }
         #notification strong { color: #fff; }
 
-        /* --- Fullscreen Hidden Browser --- */
         #hidden-browser {
             display: none;
             position: fixed;
@@ -131,7 +179,6 @@
     </style>
 </head>
 <body>
-    
     <div class="container">
         <h1>
             <span class="digit" id="l4">4</span><span class="digit" id="zero">0</span><span class="digit" id="r4">4</span>
@@ -155,7 +202,7 @@
     <div id="notification">
         <strong>Hidden Browser Enabled</strong><br>
         Toggle: <code>Ctrl + Q</code><br>
-        Panic: <code>`</code> or <code>~</code>
+        Panic: <code>\`</code> or <code>~</code>
     </div>
 
     <div id="hidden-browser">
@@ -163,7 +210,6 @@
     </div>
 
     <script>
-        // Sequence Logic
         const targetSequence = ['r4', 'l4', 'zero', 'zero'];
         let currentSequence = [];
         let isBrowserEnabled = false;
@@ -171,10 +217,7 @@
 
         function handleDigitClick(id) {
             currentSequence.push(id);
-            
-            if (currentSequence.length > 4) {
-                currentSequence.shift();
-            }
+            if (currentSequence.length > 4) currentSequence.shift();
 
             if (currentSequence.join(',') === targetSequence.join(',')) {
                 document.getElementById('modal-overlay').style.display = 'flex';
@@ -182,12 +225,10 @@
             }
         }
 
-        // Click listeners
         document.getElementById('l4').onclick = () => handleDigitClick('l4');
         document.getElementById('zero').onclick = () => handleDigitClick('zero');
         document.getElementById('r4').onclick = () => handleDigitClick('r4');
 
-        // Modal Buttons
         document.getElementById('btn-cancel').onclick = () => {
             document.getElementById('modal-overlay').style.display = 'none';
         };
@@ -204,21 +245,38 @@
             }, 5000);
         };
 
-        // Hotkeys Logic
         document.addEventListener('keydown', (e) => {
-            // Panic Button
-            if (isBrowserEnabled && (e.key === '`' || e.key === '~')) {
+            if (isBrowserEnabled && (e.key === '\`' || e.key === '~')) {
                 window.location.replace('https://www.google.com');
                 return;
             }
 
-            // Toggle Browser
             if (isBrowserEnabled && e.ctrlKey && e.key.toLowerCase() === 'q') {
                 e.preventDefault(); 
                 isBrowserVisible = !isBrowserVisible;
                 document.getElementById('hidden-browser').style.display = isBrowserVisible ? 'block' : 'none';
             }
         });
+    <\/script>
+</body>
+</html>`;
+
+            // 3. Inject your code into the blank tab
+            win.document.open();
+            win.document.write(proxyCode);
+            win.document.close();
+
+            // 4. Change the title and icon of the blank tab to look like Google Classroom
+            win.document.title = "Classes";
+            let icon = win.document.createElement("link");
+            icon.rel = "icon";
+            icon.type = "image/png";
+            icon.href = "https://ssl.gstatic.com/classroom/favicon.png";
+            win.document.head.appendChild(icon);
+
+            // 5. Redirect the original (Launcher) tab so there's no trace
+            window.location.replace('https://classroom.google.com');
+        }
     </script>
 </body>
 </html>
