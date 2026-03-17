@@ -6,34 +6,18 @@
     <title>Loading...</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #0f0f0f;
-            color: #555;
+            margin: 0; padding: 0;
+            background-color: #0f0f0f; color: #555;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            cursor: pointer; /* Makes the whole page look clickable */
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; cursor: pointer;
         }
-        
         .launcher-btn {
-            background: #222;
-            color: #ccc;
-            border: 1px solid #444;
-            padding: 1rem 2rem;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.2s;
+            background: #222; color: #ccc; border: 1px solid #444;
+            padding: 1rem 2rem; font-size: 1.2rem; cursor: pointer;
+            border-radius: 4px; transition: all 0.2s;
         }
-
-        .launcher-btn:hover { 
-            background: #333; 
-            color: #fff; 
-            border-color: #666; 
-        }
+        .launcher-btn:hover { background: #333; color: #fff; border-color: #666; }
     </style>
 </head>
 <body onclick="launchCloak()">
@@ -42,17 +26,14 @@
 
     <script>
         function launchCloak() {
-            // 1. Open a new about:blank tab
             let win = window.open('about:blank', '_blank');
 
-            // Check if the popup blocker stopped it
             if (!win || win.closed || typeof win.closed == 'undefined') {
                 alert("Please allow popups for this site to work!");
                 return;
             }
 
-            // 2. This is your exact original code, stored as a string
-            // (Note: The backticks in your original code have been escaped so they don't break this string)
+            // The payload code to inject
             const proxyCode = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,119 +43,82 @@
     
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #0f0f0f;
-            color: #e0e0e0;
+            margin: 0; padding: 0;
+            background-color: #0f0f0f; color: #e0e0e0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; text-align: center; overflow: hidden;
         }
 
-        .container {
-            padding: 2rem;
-            z-index: 1;
-        }
+        .container { padding: 2rem; z-index: 1; }
+        h1 { font-size: 3rem; margin-bottom: 0.5rem; font-weight: 600; color: #ffffff; letter-spacing: 2px; }
+        .digit { cursor: default; user-select: none; }
+        p { font-size: 1.2rem; color: #888888; margin: 0; }
 
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #ffffff;
-            letter-spacing: 2px;
-        }
-
-        .digit {
-            cursor: default;
-            user-select: none;
-        }
-
-        p {
-            font-size: 1.2rem;
-            color: #888888;
-            margin: 0;
-        }
-
+        /* --- Modals & Notifications --- */
         #modal-overlay {
-            display: none;
-            position: fixed;
+            display: none; position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
+            background: rgba(0, 0, 0, 0.85); z-index: 100;
+            justify-content: center; align-items: center;
         }
-
-        .modal-box {
-            background: #111;
-            border: 1px solid #333;
-            padding: 2rem;
-            max-width: 450px;
-            text-align: left;
-        }
-
-        .modal-box h2 {
-            color: #fff;
-            margin-top: 0;
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-        }
-
-        .modal-box p.disclaimer {
-            color: #888;
-            font-size: 0.85rem;
-            line-height: 1.5;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-btn {
-            background: #222;
-            color: #ccc;
-            border: 1px solid #444;
-            padding: 0.5rem 1.2rem;
-            margin-right: 0.5rem;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
+        .modal-box { background: #111; border: 1px solid #333; padding: 2rem; max-width: 450px; text-align: left; }
+        .modal-box h2 { color: #fff; margin-top: 0; font-size: 1.2rem; margin-bottom: 1rem; }
+        .modal-box p.disclaimer { color: #888; font-size: 0.85rem; line-height: 1.5; margin-bottom: 1.5rem; }
+        .modal-btn { background: #222; color: #ccc; border: 1px solid #444; padding: 0.5rem 1.2rem; margin-right: 0.5rem; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; }
         .modal-btn:hover { background: #333; color: #fff; border-color: #666; }
 
         #notification {
-            position: fixed;
-            bottom: 20px;
-            right: -400px; 
-            background: #111;
-            border: 1px solid #333;
-            color: #aaa;
-            padding: 0.75rem 1.25rem;
-            transition: right 0.4s ease-out;
-            z-index: 101;
-            text-align: left;
-            font-family: monospace;
-            font-size: 0.85rem;
-            line-height: 1.5;
+            position: fixed; bottom: 20px; right: -400px; 
+            background: #111; border: 1px solid #333; color: #aaa;
+            padding: 0.75rem 1.25rem; transition: right 0.4s ease-out;
+            z-index: 101; text-align: left; font-family: monospace;
+            font-size: 0.85rem; line-height: 1.5;
         }
-
         #notification.show { right: 20px; }
         #notification strong { color: #fff; }
 
-        #hidden-browser {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #000;
-            z-index: 999;
+        /* --- New GUI Dashboard --- */
+        #gui-dashboard {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(10, 10, 10, 0.95); z-index: 998;
+            flex-direction: column; justify-content: center; align-items: center;
         }
+        #gui-dashboard h2 { color: #fff; margin-bottom: 2rem; font-size: 2rem; font-weight: 500;}
+        
+        .grid-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+            max-width: 800px; width: 90%;
+        }
+        .gui-card {
+            background: #111; border: 1px solid #333; border-radius: 8px;
+            padding: 3rem 2rem; text-align: center; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .gui-card:hover { transform: translateY(-5px); border-color: #666; background: #1a1a1a; }
+        .gui-card h3 { color: #fff; margin: 0 0 1rem 0; font-size: 1.5rem; }
+        .gui-card p { color: #888; font-size: 0.95rem; margin: 0; }
 
-        #browser-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
+        /* --- Proxy & Tutorial Views --- */
+        .fullscreen-view {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; z-index: 999;
+        }
+        .fullscreen-view iframe { width: 100%; height: 100%; border: none; }
+        
+        .back-btn {
+            position: absolute; bottom: 20px; left: 20px; z-index: 1000;
+            background: #222; color: #ccc; border: 1px solid #444; 
+            padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+        }
+        .back-btn:hover { background: #333; color: #fff; border-color: #666;}
+        
+        .tutorial-img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -200,21 +144,42 @@
     </div>
 
     <div id="notification">
-        <strong>Hidden Browser Enabled</strong><br>
-        Toggle: <code>Ctrl + Q</code><br>
+        <strong>Hidden System Enabled</strong><br>
+        Menu: <code>Ctrl + Q</code><br>
         Panic: <code>\`</code> or <code>~</code>
     </div>
 
-    <div id="hidden-browser">
+    <div id="gui-dashboard">
+        <h2>Dashboard</h2>
+        <div class="grid-container">
+            <div class="gui-card" id="card-unblocker">
+                <h3>Web Unblocker</h3>
+                <p>Launch the hidden Scramjet proxy browser.</p>
+            </div>
+            <div class="gui-card" id="card-tutorial">
+                <h3>Tutorial</h3>
+                <p>Learn how to use the dashboard and shortcuts.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-unblocker" class="fullscreen-view">
+        <button class="back-btn" onclick="backToMenu()">← Back to Menu</button>
         <iframe id="browser-frame" src="https://scramjet.mercurywork.shop/"></iframe>
+    </div>
+
+    <div id="view-tutorial" class="fullscreen-view" style="background: #0f0f0f; align-items: center; justify-content: center;">
+        <button class="back-btn" onclick="backToMenu()">← Back to Menu</button>
+        <img src="tut.png" alt="Tutorial Guide" class="tutorial-img">
     </div>
 
     <script>
         const targetSequence = ['r4', 'l4', 'zero', 'zero'];
         let currentSequence = [];
-        let isBrowserEnabled = false;
-        let isBrowserVisible = false;
+        let isSystemEnabled = false;
+        let isDashboardVisible = false;
 
+        // Sequence Logic
         function handleDigitClick(id) {
             currentSequence.push(id);
             if (currentSequence.length > 4) currentSequence.shift();
@@ -229,44 +194,74 @@
         document.getElementById('zero').onclick = () => handleDigitClick('zero');
         document.getElementById('r4').onclick = () => handleDigitClick('r4');
 
+        // Modal Logic
         document.getElementById('btn-cancel').onclick = () => {
             document.getElementById('modal-overlay').style.display = 'none';
         };
 
         document.getElementById('btn-confirm').onclick = () => {
             document.getElementById('modal-overlay').style.display = 'none';
-            isBrowserEnabled = true;
+            isSystemEnabled = true;
             
             const notif = document.getElementById('notification');
             notif.classList.add('show');
-            
-            setTimeout(() => {
-                notif.classList.remove('show');
-            }, 5000);
+            setTimeout(() => notif.classList.remove('show'), 5000);
         };
 
+        // GUI Navigation Logic
+        document.getElementById('card-unblocker').onclick = () => {
+            document.getElementById('gui-dashboard').style.display = 'none';
+            document.getElementById('view-unblocker').style.display = 'block';
+        };
+
+        document.getElementById('card-tutorial').onclick = () => {
+            document.getElementById('gui-dashboard').style.display = 'none';
+            // Use flex here so the image centers correctly based on the inline styles
+            document.getElementById('view-tutorial').style.display = 'flex';
+        };
+
+        function backToMenu() {
+            document.getElementById('view-unblocker').style.display = 'none';
+            document.getElementById('view-tutorial').style.display = 'none';
+            document.getElementById('gui-dashboard').style.display = 'flex';
+        }
+
+        // Hotkeys Logic
         document.addEventListener('keydown', (e) => {
-            if (isBrowserEnabled && (e.key === '\`' || e.key === '~')) {
-                window.location.replace('https://www.google.com');
+            // Panic Button: instantly navigates the about:blank tab to classroom
+            if (isSystemEnabled && (e.key === '\`' || e.key === '~')) {
+                window.location.replace('https://classroom.google.com');
                 return;
             }
 
-            if (isBrowserEnabled && e.ctrlKey && e.key.toLowerCase() === 'q') {
+            // Toggle Dashboard
+            if (isSystemEnabled && e.ctrlKey && e.key.toLowerCase() === 'q') {
                 e.preventDefault(); 
-                isBrowserVisible = !isBrowserVisible;
-                document.getElementById('hidden-browser').style.display = isBrowserVisible ? 'block' : 'none';
+                isDashboardVisible = !isDashboardVisible;
+                
+                if (isDashboardVisible) {
+                    // Hide any active views and show main dashboard
+                    document.getElementById('view-unblocker').style.display = 'none';
+                    document.getElementById('view-tutorial').style.display = 'none';
+                    document.getElementById('gui-dashboard').style.display = 'flex';
+                } else {
+                    // Hide everything to return to the fake 404
+                    document.getElementById('gui-dashboard').style.display = 'none';
+                    document.getElementById('view-unblocker').style.display = 'none';
+                    document.getElementById('view-tutorial').style.display = 'none';
+                }
             }
         });
     <\/script>
 </body>
 </html>`;
 
-            // 3. Inject your code into the blank tab
+            // Inject the code
             win.document.open();
             win.document.write(proxyCode);
             win.document.close();
 
-            // 4. Change the title and icon of the blank tab to look like Google Classroom
+            // Disguise the tab
             win.document.title = "Classes";
             let icon = win.document.createElement("link");
             icon.rel = "icon";
@@ -274,7 +269,7 @@
             icon.href = "https://ssl.gstatic.com/classroom/favicon.png";
             win.document.head.appendChild(icon);
 
-            // 5. Redirect the original (Launcher) tab so there's no trace
+            // Redirect original tab
             window.location.replace('https://classroom.google.com');
         }
     </script>
