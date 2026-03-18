@@ -50,10 +50,21 @@
             height: 100vh; text-align: center; overflow: hidden;
         }
 
-        .container { padding: 2rem; z-index: 1; }
-        h1 { font-size: 3rem; margin-bottom: 0.5rem; font-weight: 600; color: #ffffff; letter-spacing: 2px; }
-        .digit { cursor: default; user-select: none; }
-        p { font-size: 1.2rem; color: #888888; margin: 0; }
+        .container { 
+            padding: 2rem; z-index: 1; 
+            display: flex; flex-direction: column; 
+            align-items: center; justify-content: center;
+        }
+        
+        #secret-trigger {
+            max-width: 250px; /* Adjust this to make the image bigger or smaller */
+            margin-bottom: 1.5rem;
+            user-select: none;
+            -webkit-user-drag: none; /* Prevents accidentally dragging the image */
+            cursor: default;
+        }
+
+        p { font-size: 1.2rem; color: #888888; margin: 0; letter-spacing: 1px; }
 
         /* --- Modals & Notifications --- */
         #modal-overlay {
@@ -115,19 +126,15 @@
         .back-btn:hover { background: #333; color: #fff; border-color: #666;}
         
         .tutorial-img {
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-width: 90%; max-height: 90%;
+            border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>
-            <span class="digit" id="l4">4</span><span class="digit" id="zero">0</span><span class="digit" id="r4">4</span>
-        </h1>
-        <p>This is just a joke link.</p>
+        <img src="67.png" id="secret-trigger" alt="Joke Image">
+        <p>This Is A Fake Joke Link</p>
     </div>
 
     <div id="modal-overlay">
@@ -174,25 +181,18 @@
     </div>
 
     <script>
-        const targetSequence = ['r4', 'l4', 'zero', 'zero'];
-        let currentSequence = [];
         let isSystemEnabled = false;
         let isDashboardVisible = false;
+        let clickCount = 0;
 
-        // Sequence Logic
-        function handleDigitClick(id) {
-            currentSequence.push(id);
-            if (currentSequence.length > 4) currentSequence.shift();
-
-            if (currentSequence.join(',') === targetSequence.join(',')) {
+        // Secret Image Click Logic (Click 4 times to activate)
+        document.getElementById('secret-trigger').onclick = () => {
+            clickCount++;
+            if (clickCount >= 4) {
                 document.getElementById('modal-overlay').style.display = 'flex';
-                currentSequence = []; 
+                clickCount = 0; // Reset counter
             }
-        }
-
-        document.getElementById('l4').onclick = () => handleDigitClick('l4');
-        document.getElementById('zero').onclick = () => handleDigitClick('zero');
-        document.getElementById('r4').onclick = () => handleDigitClick('r4');
+        };
 
         // Modal Logic
         document.getElementById('btn-cancel').onclick = () => {
@@ -216,7 +216,6 @@
 
         document.getElementById('card-tutorial').onclick = () => {
             document.getElementById('gui-dashboard').style.display = 'none';
-            // Use flex here so the image centers correctly based on the inline styles
             document.getElementById('view-tutorial').style.display = 'flex';
         };
 
@@ -240,12 +239,10 @@
                 isDashboardVisible = !isDashboardVisible;
                 
                 if (isDashboardVisible) {
-                    // Hide any active views and show main dashboard
                     document.getElementById('view-unblocker').style.display = 'none';
                     document.getElementById('view-tutorial').style.display = 'none';
                     document.getElementById('gui-dashboard').style.display = 'flex';
                 } else {
-                    // Hide everything to return to the fake 404
                     document.getElementById('gui-dashboard').style.display = 'none';
                     document.getElementById('view-unblocker').style.display = 'none';
                     document.getElementById('view-tutorial').style.display = 'none';
